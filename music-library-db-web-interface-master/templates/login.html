@@ -1,0 +1,20 @@
+<!-- Borrows directly from Flask Tutorial's implementation -->
+{% extends "base.html" %}
+
+{% block header %}
+<h1>{% block title %}Login{% endblock %}</h1>
+{% endblock %}
+
+{% block access %}
+<h2>Login</h2>
+<form action="{{ url_for('login') }}" method=post>
+    <dl>
+        <dt>Username:
+        <input type=text name=username required>
+        <dt>Password:
+        <input type=password name=password required>
+        <dt><input type=submit value=Login>
+    </dl>
+</form>
+{% if error %}<p class=error><strong>Error:</strong> {{ error }}{% endif %}
+{% endblock access %}

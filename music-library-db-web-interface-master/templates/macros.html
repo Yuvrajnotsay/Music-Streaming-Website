@@ -1,0 +1,162 @@
+{# templates/macros.html #}
+#jinja2: trim_blocks:True
+#jinja2: lstrip_blocks:True
+
+<!-- https://shubhamjain.co/2018/09/17/capitalizing-first-letter-in-jinja/ -->
+{% macro capitalize(text) -%}
+    {% if text|length > 0 %}{{ text[0]|upper }}{% endif %}
+    {% if text|length > 1 %}{{ text[1:] }}{% endif %}
+{%- endmacro %}
+
+{% macro f_capitalize(text, caps=True) %}
+    {% if caps %}
+        {{ capitalize(text) }}
+    {%- else %}
+        {{ text }}
+    {%- endif %}
+{% endmacro %}
+
+{% macro display_val(value, caps=False, dash=True) %}
+    {% if value is iterable and value is not string %}
+        {% set value = value | join(", ") %}
+    {% endif %}
+    {% if value == None and dash == True %}
+        -
+    {%- elif value is boolean and value == True %}
+        ❤️
+    {%- elif value is boolean and value == False %}
+        ♡️
+    {%- elif value is string -%}
+        {{f_capitalize(value, caps=caps)}}
+    {%- elif value != None %}
+        {{value}}
+    {%- endif %}
+{%- endmacro -%}
+
+{% macro label_column(col) -%}
+    {{ col|replace("_", " ")|capitalize }}
+{%- endmacro %}
+
+{%- macro reference(page, param=None, text=None, caps=False) -%}
+    {%- if param == None and text == None -%}
+        <a href="{{ url_for(page) }}">{{ f_capitalize(page, caps=caps) }}</a>
+    {%- elif param != None and text == None -%}
+        <a href="{{ url_for(page, var=param) }}">{{ f_capitalize(param, caps=caps) }}</a>
+    {%- elif param == None -%}
+        <a href="{{ url_for(page) }}">{{ f_capitalize(text, caps=caps) }}</a>
+    {%- else -%}
+        <a href="{{ url_for(page, var=param) }}">{{ f_capitalize(text, caps=caps) }}</a>
+    {%- endif -%}
+{%- endmacro -%}
+
+{% macro list_references(values, page, title=parameter, null_text=None,
+attr=None) %}
+    <section>
+    {% if values %}
+        {% if title %}
+            <b>{{title}}</b>
+        {% endif %}
+        {% for val in values %}
+            {% if attr %}
+                <li>{{ reference(page, param=val[attr]) }}</li>
+            {% else %}
+                <li>{{ reference(page, param=val) }}</li>
+            {% endif %}
+        {% endfor %}
+    {% elif null_text != None %}
+        <b>{{null_text}}</b>
+    {% endif %}
+    </section>
+    &nbsp
+{% endmacro %}
+
+{% macro list_multiple_references(values, columns, references, title=parameter,
+null_text=None, extra_text=[], dash=False) %}
+    <section>
+    {% if values %}
+        {% if title %}
+            <b>{{title}}</b>
+        {% endif %}
+
+        {%- for row in values -%}
+        <li>
+            {%- for col in columns -%}
+                {%- set i = loop.index0 -%}
+                {%- if row[col] != None and extra_text|length > i -%}
+                    {{- extra_text[i] -}}
+                {%- endif -%}
+
+                {%- if references[i] == None or row[col] == None -%}
+                    {{- display_val(row[col], dash=dash) -}}
+                {%- elif row[col] is iterable and row[col] is not string -%}
+                    {%- for parameter in row[col] -%}
+                        {{- reference(references[i], param=parameter) -}}
+                        {%- if not loop.last -%},{%- endif -%}
+                    {%- endfor -%}
+                {%- else -%}
+                    {{- reference(references[i], param=row[col]) -}}
+                {%- endif -%}
+
+                {%- if loop.last and extra_text|length > i+1 -%}
+                    {{- extra_text[i+1] -}}
+                {%- endif -%}
+            {%- endfor -%}
+        </li>
+        {%- endfor -%}
+    {% elif null_text != None %}
+        <b>{{null_text}}</b>
+    {% endif %}
+    </section>
+    &nbsp
+{% endmacro %}
+
+{% macro display_all_as_table(entity, columns, references, dash=True, yes_marker=False) %}
+{% if not entity %}
+    <p>No data to display.</p>
+{% else %}
+<table>
+    <tr>
+        {% for col in columns %}
+            <th>{{ label_column(col) }}</th>
+        {% endfor %}
+    </tr>
+    {% for row in entity %}
+        <tr>
+        {% for col in columns %}<td>
+            {% set i = loop.index0 %}
+            {% if references[i] == None or row[col] == None %}
+                {% if yes_marker and row[col] == True %}
+                    Yes
+                {% elif yes_marker and row[col] == False %}
+                    No
+                {% else %}
+                    {{ display_val(row[col], dash=dash) }}
+                {% endif %}
+            {%- elif row[col] is iterable and row[col] is not string %}
+                {% for parameter in row[col] %}
+                    {{ reference(references[i], param=parameter) }}
+                    {%- if not loop.last %},{% endif %}
+                {% endfor %}
+            {% else %}
+                {{ reference(references[i], param=row[col]) }}
+            {% endif -%}
+        </td>{% endfor %}
+        </tr>
+    {% endfor %}
+</table>
+{% endif %}
+{% endmacro %}
+
+{% macro nav_link(menu_item) %}
+    {% if menu_item == "user" %}
+        {{ reference('user', param=session['username'], caps=True) }}
+    {% else %}
+        {{ reference(menu_item, caps=True) }}
+    {% endif %}
+
+    {% if request.endpoint == menu_item or request.endpoint == menu_item[:-1]
+    %}
+        ←
+    {% endif %}
+{% endmacro %}
+

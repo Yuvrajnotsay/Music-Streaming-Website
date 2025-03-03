@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+
+{% block content %}
+
+<h2>{{title}}</h2>
+
+
+<h3>Traits</h3>
+{{ macros.display_all_as_table(info, info_columns, info_references) }}
+&nbsp
+
+{% if files %}
+    <h3>Files</h3>
+    {{ macros.display_all_as_table(files, file_columns, file_references) }}
+    &nbsp
+{% else %}
+    <h3>No files for this song</h3>
+{% endif %}
+
+{% if lyrics %}
+    <h3>Lyrics</h3>
+    <p>
+    {% if lyrics.lyric_type %}
+        Type:{{macros.capitalize(lyrics.lyric_type)}}
+        <div></div>
+    {% endif %}
+    {{lyrics.lyric_text}}
+    </p>
+{% else %}
+    <h3>No lyrics for this song</h3>
+{% endif %}
+
+{% endblock content %}

@@ -1,0 +1,25 @@
+{# templates/base.html #}
+{% import "macros.html" as macros %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>{% block title %}{{ title }}{% endblock title %}</title>
+</head>
+
+<body>
+    <header>
+        {% include "_navigation.html" %}
+    </header>
+    {% block access %}
+        {% if session['username'] %}
+            {% block content %}
+                <h2>Explore using the navigation panel above</h2>
+            {% endblock content %}
+        {% else %}
+            <h2>Login to Access Information</h2>
+        {% endif %}
+    {% endblock access %}
+</body>
+</html>

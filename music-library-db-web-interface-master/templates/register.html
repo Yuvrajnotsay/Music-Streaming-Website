@@ -1,0 +1,22 @@
+<!-- Borrows directly from Flask Tutorial's implementation -->
+{% extends 'base.html' %}
+
+{% block header %}
+<h1>{% block title %}Register{% endblock %}</h1>
+{% endblock %}
+
+{% block access %}
+<h2>Register</h2>
+<form action="{{ url_for('register') }}" method=post>
+    <dl>
+        <dt><label for="username">Username: </label>
+        <input name="username" id="username" required>
+        <dt><label for="password">Password: </label>
+        <input type="password" name="password" id="password" required>
+        <dt><label for="name">Name: </label>
+        <input name="name" id="name"> (optional)
+        <dt></dd><input type="submit" value="Register">
+    </dl>
+</form>
+{% if error %}<p class=error><strong>Error:</strong> {{ error }}{% endif %}
+{% endblock access %}

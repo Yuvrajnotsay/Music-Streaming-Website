@@ -1,0 +1,14 @@
+{# templates/_navigation.html #}
+{% import "macros.html" as macros %}
+
+{% if session['username'] %}
+    {% set links = ["artists","releases","playlists","songs","genres", "users", "user", "logout"] %}
+{% else %}
+    {% set links = ["login", "register"] %}
+{% endif %}
+
+<nav>
+    {% for menu_item in links %}
+        {{ macros.nav_link(menu_item)}} /
+    {% endfor %}
+</nav>
